@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/java;
+import ballerina/math;
 import ballerina/task;
 import ballerina/time;
 
@@ -124,7 +125,7 @@ public type Cache object {
                                 logLevel = LOG_LEVEL_DEBUG);
         }
         // If the current cache is full (i.e. size = capacity), evict cache.
-        if (self.size() == self.capacity) {
+        if (self.size() >= self.capacity) {
             evict(self, self.evictionPolicy, self.capacity, self.evictionFactor);
         }
 
@@ -239,7 +240,7 @@ public type Cache object {
 };
 
 function evict(Cache cache, AbstractEvictionPolicy evictionPolicy, int capacity, float evictionFactor) {
-    int evictionKeysCount = <int>(capacity * evictionFactor);
+    int evictionKeysCount = <int>(math:ceil(capacity * evictionFactor));
     foreach int i in 1...evictionKeysCount {
         Node? node = evictionPolicy.evict();
         if (node is Node) {
