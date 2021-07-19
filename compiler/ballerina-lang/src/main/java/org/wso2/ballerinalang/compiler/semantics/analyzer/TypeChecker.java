@@ -6970,6 +6970,13 @@ public class TypeChecker extends BLangNodeVisitor {
             actualType = checkObjectFieldAccessExpr(fieldAccessExpr, varRefType, fieldName);
             fieldAccessExpr.originalType = actualType;
         } else if (types.isSubTypeOfBaseType(varRefType, TypeTags.RECORD)) {
+
+            // Check if the field accessed is present in the record fields set.
+            if (!checkRecordFieldExistence(varRefType, fieldName)) {
+                dlog.error(fieldAccessExpr.pos, DiagnosticErrorCode.UNDEFINED_FIELD_IN_RECORD, fieldName, varRefType);
+                return actualType;
+            }
+
             actualType = checkRecordFieldAccessExpr(fieldAccessExpr, varRefType, fieldName);
 
             if (actualType != symTable.semanticError) {
@@ -7029,6 +7036,37 @@ public class TypeChecker extends BLangNodeVisitor {
         }
 
         return actualType;
+    }
+
+    private boolean checkRecordFieldExistence(BType varRefType, Name fieldName) {
+        switch (varRefType.tag) {
+            case TypeTags.RECORD:
+                return ((BRecordType) varRefType).fields.containsKey(fieldName.getValue());
+            case TypeTags.UNION:
+                return checkFieldExistenceInUnionRecordMembers(((BUnionType) varRefType).getMemberTypes(), fieldName);
+            default:
+                // The presence check for the fieldName is only performed on record types or union types having
+                // at least a single member which is a record type. If the varRefType is non of the above,
+                // a true value is returned to skip this step.
+                return true;
+        }
+    }
+
+    private boolean checkFieldExistenceInUnionRecordMembers(LinkedHashSet<BType> memberTypes, Name fieldName) {
+        boolean membersHaveRecordsTypes = false;
+        for (BType memberType : memberTypes) {
+            if (memberType.tag == TypeTags.RECORD) {
+                if (((BRecordType) memberType).fields.containsKey(fieldName.getValue())) {
+                    return true;
+                }
+                membersHaveRecordsTypes = true;
+            }
+        }
+
+        // If the members of the union type does not consist at least a single record type, the presence check for
+        // fieldName in record fields can not be performed. Therefore, a true value is returned in order to skip this
+        // step. Otherwise, if the fieldName isn't present in any of the record types, the presence check returns false.
+        return !membersHaveRecordsTypes;
     }
 
     private void resolveXMLNamespace(BLangFieldBasedAccess.BLangNSPrefixedFieldBasedAccess fieldAccessExpr) {
