@@ -16,6 +16,7 @@
  */
 package org.ballerinalang.test.expressions.binaryoperations;
 
+import org.ballerinalang.core.model.values.BByte;
 import org.ballerinalang.core.model.values.BFloat;
 import org.ballerinalang.core.model.values.BInteger;
 import org.ballerinalang.core.model.values.BValue;
@@ -270,6 +271,24 @@ public class GreaterLessThanOperationTest {
                 "'[float,int,string,float...]' and '[float,int,float...]'", 271, 18);
         BAssertUtil.validateError(resultNegative, index, "operator '>=' not defined for " +
                 "'[float,int,string,float...]' and '[float,int,float...]'", 272, 18);
+    }
+
+    @Test(description = "Test byte greater than, less than expression")
+    public void testByteComparison() {
+        BValue[] args = { new BByte(0x20), new BByte(0x21)};
+        BRunUtil.invoke(result, "testByteComparison", args);
+
+        args[0] = new BByte(32);
+        args[1] = new BByte(45);
+        BRunUtil.invoke(result, "testByteComparison", args);
+
+        args[0] = new BByte(0x20);
+        args[1] = new BByte(35);
+        BRunUtil.invoke(result, "testByteComparison", args);
+
+        args[0] = new BByte(0);
+        args[1] = new BByte(0xFF);
+        BRunUtil.invoke(result, "testByteComparison", args);
     }
 
     @Test(description = "Test decimal greater than, less than expression")

@@ -24,6 +24,24 @@ function testFloatRanges(float a) returns (int) {
     return retunType;
 }
 
+function testByteComparison(byte lowValue, byte highValue) {
+    test:assertTrue(lowValue < highValue);
+    test:assertTrue(lowValue <= highValue);
+
+    test:assertTrue(highValue > lowValue);
+    test:assertTrue(highValue >= lowValue);
+
+    test:assertFalse(highValue < lowValue);
+    test:assertFalse(highValue <= lowValue);
+    test:assertFalse(lowValue > highValue);
+    test:assertFalse(lowValue >= highValue);
+
+    test:assertFalse(lowValue > lowValue);
+    test:assertFalse(lowValue < lowValue);
+    test:assertTrue(lowValue >= lowValue);
+    test:assertTrue(lowValue <= lowValue);
+}
+
 function testDecimalComparison() {
     decimal lowValue = 3;
     decimal highValue = 5;
